@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>برآورد هزینه پروژه - نسخه اصلاح شده</title>
+    <style>
+        :root {
+            --bg-gradient-1: #667eea;
+            --bg-gradient-2: #764ba2;
+            --bg-body: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-container: #ffffff;
+            --bg-scenario: #f8f9fa;
+            --bg-table: #ffffff;
+            --bg-header: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --text-primary: #333333;
+            --text-header: #667eea;
+            --text-section: #1976d2;
+            --border-color: #e0e0e0;
+            --hover-bg: #f0f4ff;
+            --input-border: #667eea;
+            --shadow: rgba(0,0,0,0.3);
+            --tab-active: #667eea;
+            --tab-inactive: #e0e0e0;
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient-1: #1a1a2e;
+            --bg-gradient-2: #16213e;
+            --bg-body: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            --bg-container: #1e1e2e;
+            --bg-scenario: #252535;
+            --bg-table: #2a2a3e;
+            --bg-header: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            --text-primary: #e0e0e0;
+            --text-header: #a0aec0;
+            --text-section: #63b3ed;
+            --border-color: #4a5568;
+            --hover-bg: #374151;
+            --input-border: #4a5568;
+            --shadow: rgba(0,0,0,0.6);
+            --tab-active: #4a5568;
+            --tab-inactive: #2d3748;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-body);
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--bg-container);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px var(--shadow);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            color: var(--text-header);
+            font-size: 2em;
+            flex: 1;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-theme {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-load {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* استایل تب‌ها */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: var(--tab-inactive);
+            border: none;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-primary);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .tab:hover {
+            background: var(--hover-bg);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: var(--tab-active);
+            color: white;
+            border-bottom: 3px solid var(--tab-active);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .scenario {
+            background: var(--bg-scenario);
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            border: 3px solid var(--input-border);
+        }
+
+        .scenario h2 {
+            color: var(--text-header);
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: var(--bg-table);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: var(--bg-header);
+            color: white;
+            padding: 15px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: right;
+        }
+
+        tr:hover {
+            background: var(--hover-bg);
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid var(--input-border);
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+            background: var(--bg-container);
+            color: var(--text-primary);
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--bg-gradient-2);
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .editable-name {
+            border: 1px dashed var(--border-color);
+            padding: 5px;
+            border-radius: 3px;
+            cursor: text;
+        }
+
+        .total-row {
+            background: #fff3cd !important;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        [data-theme="dark"] .total-row {
+            background: #4a4a1e !important;
+        }
+
+        .grand-total {
+            background: var(--bg-header);
+            color: white;
+            font-size: 1.3em;
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .section-title {
+            background: #e3f2fd;
+            padding: 10px;
+            font-weight: bold;
+            color: var(--text-section);
+        }
+
+        [data-theme="dark"] .section-title {
+            background: #2d3748;
+        }
+
+        .comparison {
+            margin-top: 40px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .comparison h2 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .comparison table {
+            background: rgba(255,255,255,0.95);
+        }
+
+        .comparison th {
+            background: rgba(240, 147, 251, 0.8);
+            color: white;
+        }
+
+        .comparison td {
+            color: #333;
+        }
+
+        [data-theme="dark"] .comparison td {
+            color: #e0e0e0;
+        }
+
+        .delete-row {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .delete-row:hover {
+            background: #cc0000;
+        }
+
+        .add-row-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .add-row-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #43e97b;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .notification.error {
+            background: #ff4444;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .timeline {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .timeline h2 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .timeline-content {
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 10px;
+            color: #333;
+        }
+
+        [data-theme="dark"] .timeline-content {
+            background: rgba(30,30,46,0.95);
+            color: #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            
+            .controls {
+                width: 100%;
+            }
+            
+            .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            .tab {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification">✅ ذخیره شد!</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🎯 برآورد هزینه پروژه</h1>
+            <div class="controls">
+                <button class="btn btn-theme" onclick="toggleTheme()">
+                    🌙 تغییر تم
+                </button>
+                <button class="btn btn-save" onclick="saveData()">
+                    💾 ذخیره
+                </button>
+                <button class="btn btn-load" onclick="loadData()">
+                    📂 بارگذاری
+                </button>
+            </div>
+        </div>
+
+        <!-- تب‌ها -->
+        <div class="tabs">
+            <button class="tab active" onclick="openTab(event, 'scenarioA')">
+                📱 سناریو A: فقط Beacon
+            </button>
+            <button class="tab" onclick="openTab(event, 'scenarioB')">
+                🌍 سناریو B: GPS + Beacon ⭐
+            </button>
+            <button class="tab" onclick="openTab(event, 'scenarioC')">
+                ⭐ سناریو C: Beacon حرفه‌ای + GPS ⭐⭐
+            </button>
+        </div>
+
+        <!-- محتوای سناریو A -->
+        <div id="scenarioA" class="tab-content active">
+            <div class="scenario">
+                <h2>📱 سناریو A: فقط Beacon</h2>
+                
+                <table class="hardware-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">قلم</th>
+                            <th style="width: 15%">تعداد</th>
+                            <th style="width: 20%">قیمت واحد ($)</th>
+                            <th style="width: 20%">جمع ($)</th>
+                            <th style="width: 5%">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-title">
+                            <td colspan="5">سخت‌افزار</td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="Minew MS50SFA"></td>
+                            <td><input type="number" class="qty-input" value="25" oninput="calculateRow(this)"></td>
+                            <td><input type="number" class="price-input" value="38" oninput="calculateRow(this)"></td>
+                            <td class="result">950</td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="باتری یدک"></td>
+                            <td><input type="number" class="qty-input" value="50" oninput="calculateRow(this)"></td>
+                            <td><input type="number" class="price-input" value="2" oninput="calculateRow(this)"></td>
+                            <td class="result">100</td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="بست و پایه ضدآب"></td>
+                            <td><input type="number" class="qty-input" value="25" oninput="calculateRow(this)"></td>
+                            <td><input type="number" class="price-input" value="8" oninput="calculateRow(this)"></td>
+                            <td class="result">200</td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="قفل امنیتی"></td>
+                            <td><input type="number" class="qty-input" value="25" oninput="calculateRow(this)"></td>
+                            <td><input type="number" class="price-input" value="5" oninput="calculateRow(this)"></td>
+                            <td class="result">125</td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="3">جمع سخت‌افزار</td>
+                            <td class="section-total">1375</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="add-row-btn" onclick="addRow(this, 'hardware')">➕ افزودن ردیف سخت‌افزار</button>
+
+                <table class="install-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">قلم</th>
+                            <th style="width: 20%">مدت</th>
+                            <th style="width: 30%">هزینه ($)</th>
+                            <th style="width: 10%">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-title">
+                            <td colspan="4">نصب</td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="نصب Beacon"></td>
+                            <td><input type="text" value="7 روز"></td>
+                            <td><input type="number" class="cost-input" value="450" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="کالیبراسیون"></td>
+                            <td><input type="text" value="7 روز"></td>
+                            <td><input type="number" class="cost-input" value="240" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="تابلوها + QR"></td>
+                            <td><input type="text" value="10 عدد"></td>
+                            <td><input type="number" class="cost-input" value="150" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2">جمع نصب</td>
+                            <td class="section-total">840</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="add-row-btn" onclick="addRow(this, 'install')">➕ افزودن ردیف نصب</button>
+
+                <table class="dev-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">فاز</th>
+                            <th style="width: 20%">زمان</th>
+                            <th style="width: 30%">هزینه ($)</th>
+                            <th style="width: 10%">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-title">
+                            <td colspan="4">توسعه نرم‌افزار</td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="تحلیل و طراحی UI/UX"></td>
+                            <td><input type="text" value="4 هفته"></td>
+                            <td><input type="number" class="cost-input" value="300" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="مدل 3D محیط"></td>
+                            <td><input type="text" value="4 هفته"></td>
+                            <td><input type="number" class="cost-input" value="800" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="توسعه اپ Flutter"></td>
+                            <td><input type="text" value="20 هفته"></td>
+                            <td><input type="number" class="cost-input" value="7000" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="ادغام Beacon SDK"></td>
+                            <td><input type="text" value="2 هفته"></td>
+                            <td><input type="number" class="cost-input" value="1200" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="سیستم مسیریابی"></td>
+                            <td><input type="text" value="2 هفته"></td>
+                            <td><input type="number" class="cost-input" value="2400" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="نمایش نقشه 3D"></td>
+                            <td><input type="text" value="2 هفته"></td>
+                            <td><input type="number" class="cost-input" value="200" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="Backend & API"></td>
+                            <td><input type="text" value="8 هفته"></td>
+                            <td><input type="number" class="cost-input" value="2000" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="تست و دیباگ"></td>
+                            <td><input type="text" value="2 هفته"></td>
+                            <td><input type="number" class="cost-input" value="1000" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="section-title">
+                            <td colspan="4">مدل پراپ</td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="2D کانسپت"></td>
+                            <td><input type="text" value="8 هفته"></td>
+                            <td><input type="number" class="cost-input" value="900" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="5 بازی AR"></td>
+                            <td><input type="text" value="8 هفته"></td>
+                            <td><input type="number" class="cost-input" value="900" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="طراحی کارکتر"></td>
+                            <td><input type="text" value="16 هفته"></td>
+                            <td><input type="number" class="cost-input" value="700" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="ریگ و انیمیشن"></td>
+                            <td><input type="text" value="3 هفته"></td>
+                            <td><input type="number" class="cost-input" value="500" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="عنصر اضافی"></td>
+                            <td><input type="text" value="4 هفته"></td>
+                            <td><input type="number" class="cost-input" value="400" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="AI Tour Guide"></td>
+                            <td><input type="text" value="10 هفته"></td>
+                            <td><input type="number" class="cost-input" value="2000" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2">جمع توسعه (24 هفته)</td>
+                            <td class="section-total">18100</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="add-row-btn" onclick="addRow(this, 'dev')">➕ افزودن ردیف توسعه</button>
+
+                <div class="grand-total">
+                    💰 جمع کل سناریو A: $<span class="grand-total-value">20315</span>
+                </div>
+
+                <table style="margin-top: 20px;">
+                    <thead>
+                        <tr>
+                            <th colspan="2">نگهداری سالانه</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>تعویض باتری</td>
+                            <td>$100</td>
+                        </tr>
+                        <tr>
+                            <td>بازرسی فصلی</td>
+                            <td>$200</td>
+                        </tr>
+                        <tr>
+                            <td>بروزرسانی اپ</td>
+                            <td>$1,200</td>
+                        </tr>
+                        <tr>
+                            <td>پشتیبانی فنی</td>
+                            <td>$800</td>
+                        </tr>
+                        <tr>
+                            <td>سرور و Cloud</td>
+                            <td>$900</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>جمع نگهداری سالانه</td>
+                            <td>$3,200</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- محتوای سناریو B -->
+        <div id="scenarioB" class="tab-content">
+            <div class="scenario">
+                <h2>🌍 سناریو B: GPS + Beacon ⭐</h2>
+                
+                <table class="hardware-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">قلم</th>
+                            <th style="width: 15%">تعداد</th>
+                            <th style="width: 20%">قیمت واحد ($)</th>
+                            <th style="width: 20%">جمع ($)</th>
+                            <th style="width: 5%">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-title">
+                            <td colspan="5">سخت‌افزار</td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="Minew MS50SFA"></td>
+                            <td><input type="number" class="qty-input" value="20" oninput="calculateRow(this)"></td>
+                            <td><input type="number" class="price-input" value="38" oninput="calculateRow(this)"></td>
+                            <td class="result">760</td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="باتری یدک"></td>
+                            <td><input type="number" class="qty-input" value="40" oninput="calculateRow(this)"></td>
+                            <td><input type="number" class="price-input" value="2" oninput="calculateRow(this)"></td>
+                            <td class="result">80</td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="بست و پایه"></td>
+                            <td><input type="number" class="qty-input" value="20" oninput="calculateRow(this)"></td>
+                            <td><input type="number" class="price-input" value="8" oninput="calculateRow(this)"></td>
+                            <td class="result">160</td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="قفل امنیتی"></td>
+                            <td><input type="number" class="qty-input" value="20" oninput="calculateRow(this)"></td>
+                            <td><input type="number" class="price-input" value="5" oninput="calculateRow(this)"></td>
+                            <td class="result">100</td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="3">جمع سخت‌افزار</td>
+                            <td class="section-total">1100</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="add-row-btn" onclick="addRow(this, 'hardware')">➕ افزودن ردیف سخت‌افزار</button>
+
+                <table class="install-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">قلم</th>
+                            <th style="width: 20%">مدت</th>
+                            <th style="width: 30%">هزینه ($)</th>
+                            <th style="width: 10%">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-title">
+                            <td colspan="4">نصب</td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="نصب Beacon"></td>
+                            <td><input type="text" value="2.5 روز"></td>
+                            <td><input type="number" class="cost-input" value="375" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="کالیبراسیون GPS+Beacon"></td>
+                            <td><input type="text" value="8 روز"></td>
+                            <td><input type="number" class="cost-input" value="240" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="تابلوها + QR"></td>
+                            <td><input type="text" value="10 عدد"></td>
+                            <td><input type="number" class="cost-input" value="150" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2">جمع نصب</td>
+                            <td class="section-total">765</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="add-row-btn" onclick="addRow(this, 'install')">➕ افزودن ردیف نصب</button>
+
+                <table class="dev-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">فاز</th>
+                            <th style="width: 20%">زمان</th>
+                            <th style="width: 30%">هزینه ($)</th>
+                            <th style="width: 10%">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-title">
+                            <td colspan="4">توسعه نرم‌افزار</td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="تحلیل و طراحی UI/UX"></td>
+                            <td><input type="text" value="4 هفته"></td>
+                            <td><input type="number" class="cost-input" value="2400" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="مدل 3D محیط"></td>
+                            <td><input type="text" value="4 هفته"></td>
+                            <td><input type="number" class="cost-input" value="3000" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="توسعه اپ Flutter"></td>
+                            <td><input type="text" value="20 هفته"></td>
+                            <td><input type="number" class="cost-input" value="10500" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="ادغام GPS و Beacon"></td>
+                            <td><input type="text" value="1.5 هفته"></td>
+                            <td><input type="number" class="cost-input" value="1800" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="Fusion Algorithm"></td>
+                            <td><input type="text" value="1 هفته"></td>
+                            <td><input type="number" class="cost-input" value="1500" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="سیستم مسیریابی"></td>
+                            <td><input type="text" value="2 هفته"></td>
+                            <td><input type="number" class="cost-input" value="2400" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="نمایش نقشه 3D"></td>
+                            <td><input type="text" value="2 هفته"></td>
+                            <td><input type="number" class="cost-input" value="2200" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="Backend & API"></td>
+                            <td><input type="text" value="4 هفته"></td>
+                            <td><input type="number" class="cost-input" value="5200" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="تست و دیباگ"></td>
+                            <td><input type="text" value="2.5 هفته"></td>
+                            <td><input type="number" class="cost-input" value="1800" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="انتشار در Store"></td>
+                            <td><input type="text" value="1 هفته"></td>
+                            <td><input type="number" class="cost-input" value="400" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="section-title">
+                            <td colspan="4">مدل پراپ</td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="2D کانسپت"></td>
+                            <td><input type="text" value="8 هفته"></td>
+                            <td><input type="number" class="cost-input" value="900" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="5 بازی AR"></td>
+                            <td><input type="text" value="8 هفته"></td>
+                            <td><input type="number" class="cost-input" value="900" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="طراحی کارکتر"></td>
+                            <td><input type="text" value="16 هفته"></td>
+                            <td><input type="number" class="cost-input" value="700" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="ریگ و انیمیشن"></td>
+                            <td><input type="text" value="3 هفته"></td>
+                            <td><input type="number" class="cost-input" value="500" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="عنصر اضافی"></td>
+                            <td><input type="text" value="4 هفته"></td>
+                            <td><input type="number" class="cost-input" value="400" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="AI Tour Guide"></td>
+                            <td><input type="text" value="10 هفته"></td>
+                            <td><input type="number" class="cost-input" value="2000" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2">جمع توسعه (27 هفته)</td>
+                            <td class="section-total">36600</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="add-row-btn" onclick="addRow(this, 'dev')">➕ افزودن ردیف توسعه</button>
+
+                <div class="grand-total">
+                    💰 جمع کل سناریو B: $<span class="grand-total-value">38465</span>
+                </div>
+
+                <table style="margin-top: 20px;">
+                    <thead>
+                        <tr>
+                            <th colspan="2">نگهداری سالانه</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>تعویض باتری</td>
+                            <td>$80</td>
+                        </tr>
+                        <tr>
+                            <td>بازرسی فصلی</td>
+                            <td>$180</td>
+                        </tr>
+                        <tr>
+                            <td>بروزرسانی اپ</td>
+                            <td>$1,200</td>
+                        </tr>
+                        <tr>
+                            <td>پشتیبانی فنی</td>
+                            <td>$800</td>
+                        </tr>
+                        <tr>
+                            <td>سرور و Cloud</td>
+                            <td>$900</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>جمع نگهداری سالانه</td>
+                            <td>$3,160</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- محتوای سناریو C -->
+        <div id="scenarioC" class="tab-content">
+            <div class="scenario">
+                <h2>⭐ سناریو C: Beacon حرفه‌ای + GPS ⭐⭐</h2>
+                
+                <table class="hardware-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">قلم</th>
+                            <th style="width: 15%">تعداد</th>
+                            <th style="width: 20%">قیمت واحد ($)</th>
+                            <th style="width: 20%">جمع ($)</th>
+                            <th style="width: 5%">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-title">
+                            <td colspan="5">سخت‌افزار</td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="Kontakt.io Beacon Pro"></td>
+                            <td><input type="number" class="qty-input" value="12" oninput="calculateRow(this)"></td>
+                            <td><input type="number" class="price-input" value="75" oninput="calculateRow(this)"></td>
+                            <td class="result">900</td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="بست حرفه‌ای"></td>
+                            <td><input type="number" class="qty-input" value="12" oninput="calculateRow(this)"></td>
+                            <td><input type="number" class="price-input" value="12" oninput="calculateRow(this)"></td>
+                            <td class="result">144</td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="قفل امنیتی"></td>
+                            <td><input type="number" class="qty-input" value="12" oninput="calculateRow(this)"></td>
+                            <td><input type="number" class="price-input" value="5" oninput="calculateRow(this)"></td>
+                            <td class="result">60</td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="3">جمع سخت‌افزار</td>
+                            <td class="section-total">1104</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="add-row-btn" onclick="addRow(this, 'hardware')">➕ افزودن ردیف سخت‌افزار</button>
+
+                <table class="install-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">قلم</th>
+                            <th style="width: 20%">مدت</th>
+                            <th style="width: 30%">هزینه ($)</th>
+                            <th style="width: 10%">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-title">
+                            <td colspan="4">نصب</td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="نصب Beacon"></td>
+                            <td><input type="text" value="2 روز"></td>
+                            <td><input type="number" class="cost-input" value="300" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="کالیبراسیون"></td>
+                            <td><input type="text" value="1.5 روز"></td>
+                            <td><input type="number" class="cost-input" value="180" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="تابلوها"></td>
+                            <td><input type="text" value="10 عدد"></td>
+                            <td><input type="number" class="cost-input" value="150" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2">جمع نصب</td>
+                            <td class="section-total">630</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="add-row-btn" onclick="addRow(this, 'install')">➕ افزودن ردیف نصب</button>
+
+                <table class="dev-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">فاز</th>
+                            <th style="width: 20%">زمان</th>
+                            <th style="width: 30%">هزینه ($)</th>
+                            <th style="width: 10%">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-title">
+                            <td colspan="4">توسعه نرم‌افزار</td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="تحلیل و طراحی UI/UX"></td>
+                            <td><input type="text" value="4 هفته"></td>
+                            <td><input type="number" class="cost-input" value="2400" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="مدل 3D محیط"></td>
+                            <td><input type="text" value="4 هفته"></td>
+                            <td><input type="number" class="cost-input" value="3000" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="توسعه اپ Flutter"></td>
+                            <td><input type="text" value="20 هفته"></td>
+                            <td><input type="number" class="cost-input" value="10500" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="ادغام GPS و Beacon"></td>
+                            <td><input type="text" value="1.5 هفته"></td>
+                            <td><input type="number" class="cost-input" value="1800" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="Fusion Algorithm"></td>
+                            <td><input type="text" value="1 هفته"></td>
+                            <td><input type="number" class="cost-input" value="1500" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="سیستم مسیریابی"></td>
+                            <td><input type="text" value="2 هفته"></td>
+                            <td><input type="number" class="cost-input" value="2400" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="نمایش نقشه 3D"></td>
+                            <td><input type="text" value="2 هفته"></td>
+                            <td><input type="number" class="cost-input" value="2200" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="Backend & API"></td>
+                            <td><input type="text" value="4 هفته"></td>
+                            <td><input type="number" class="cost-input" value="5200" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="تست و دیباگ"></td>
+                            <td><input type="text" value="2.5 هفته"></td>
+                            <td><input type="number" class="cost-input" value="1800" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="انتشار در Store"></td>
+                            <td><input type="text" value="1 هفته"></td>
+                            <td><input type="number" class="cost-input" value="400" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="section-title">
+                            <td colspan="4">مدل پراپ</td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="2D کانسپت"></td>
+                            <td><input type="text" value="8 هفته"></td>
+                            <td><input type="number" class="cost-input" value="900" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="5 بازی AR"></td>
+                            <td><input type="text" value="8 هفته"></td>
+                            <td><input type="number" class="cost-input" value="900" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="طراحی کارکتر"></td>
+                            <td><input type="text" value="16 هفته"></td>
+                            <td><input type="number" class="cost-input" value="700" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="ریگ و انیمیشن"></td>
+                            <td><input type="text" value="3 هفته"></td>
+                            <td><input type="number" class="cost-input" value="500" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="عنصر اضافی"></td>
+                            <td><input type="text" value="4 هفته"></td>
+                            <td><input type="number" class="cost-input" value="400" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="data-row">
+                            <td><input type="text" class="editable-name" value="AI Tour Guide"></td>
+                            <td><input type="text" value="10 هفته"></td>
+                            <td><input type="number" class="cost-input" value="2000" oninput="calculateTable(this)"></td>
+                            <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2">جمع توسعه (27 هفته)</td>
+                            <td class="section-total">36600</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="add-row-btn" onclick="addRow(this, 'dev')">➕ افزودن ردیف توسعه</button>
+
+                <div class="grand-total">
+                    💰 جمع کل سناریو C: $<span class="grand-total-value">38334</span>
+                </div>
+
+                <table style="margin-top: 20px;">
+                    <thead>
+                        <tr>
+                            <th colspan="2">نگهداری سالانه</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>بازرسی فصلی</td>
+                            <td>$150</td>
+                        </tr>
+                        <tr>
+                            <td>بروزرسانی اپ</td>
+                            <td>$1,200</td>
+                        </tr>
+                        <tr>
+                            <td>پشتیبانی فنی</td>
+                            <td>$800</td>
+                        </tr>
+                        <tr>
+                            <td>سرور و Cloud</td>
+                            <td>$900</td>
+                        </tr>
+                        <tr>
+                            <td>مانیتورینگ Cloud</td>
+                            <td>$120</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>جمع نگهداری سالانه</td>
+                            <td>$3,170</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- جدول مقایسه -->
+        <div class="comparison">
+            <h2>📊 مقایسه نهایی سناریوها</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>معیار</th>
+                        <th>فقط Beacon</th>
+                        <th>GPS + Beacon</th>
+                        <th>Beacon حرفه‌ای + GPS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>هزینه اولیه</strong></td>
+                        <td>$<span id="compA">20315</span></td>
+                        <td>$<span id="compB">38465</span></td>
+                        <td>$<span id="compC">38334</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>زمان اجرا</strong></td>
+                        <td>24 هفته</td>
+                        <td>27 هفته</td>
+                        <td>27 هفته</td>
+                    </tr>
+                    <tr>
+                        <td><strong>دقت</strong></td>
+                        <td>1-3 متر</td>
+                        <td>0.5-2 متر</td>
+                        <td>0.5-1.5 متر</td>
+                    </tr>
+                    <tr>
+                        <td><strong>پوشش</strong></td>
+                        <td>داخلی</td>
+                        <td>داخل + خارج</td>
+                        <td>داخل + خارج</td>
+                    </tr>
+                    <tr>
+                        <td><strong>نگهداری سالانه</strong></td>
+                        <td>$3,200</td>
+                        <td>$3,160</td>
+                        <td>$3,170</td>
+                    </tr>
+                    <tr>
+                        <td><strong>ریسک GPS</strong></td>
+                        <td>صفر</td>
+                        <td>متوسط</td>
+                        <td>متوسط</td>
+                    </tr>
+                    <tr>
+                        <td><strong>تجربه کاربری</strong></td>
+                        <td>خوب</td>
+                        <td>عالی</td>
+                        <td>عالی</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- زمان‌بندی -->
+        <div class="timeline">
+            <h2>⏱️ زمان‌بندی پروژه</h2>
+            <div class="timeline-content">
+                <h3>سناریو A: فقط Beacon (24 هفته / 6 ماه)</h3>
+                <ul>
+                    <li><strong>ماه 1:</strong> تحلیل، طراحی UI/UX، شروع مدل 3D، خرید تجهیزات</li>
+                    <li><strong>ماه 2:</strong> اتمام مدل 3D، شروع توسعه اپ Flutter</li>
+                    <li><strong>ماه 3:</strong> ادامه توسعه اپ، ادغام Beacon SDK</li>
+                    <li><strong>ماه 4:</strong> سیستم مسیریابی، نمایش نقشه 3D</li>
+                    <li><strong>ماه 5:</strong> نصب و کالیبراسیون Beaconها</li>
+                    <li><strong>ماه 6:</strong> تست جامع و راه‌اندازی نهایی</li>
+                </ul>
+
+                <h3 style="margin-top: 20px;">سناریو B/C: GPS + Beacon (27 هفته / 6.75 ماه)</h3>
+                <ul>
+                    <li><strong>ماه 1:</strong> تحلیل، طراحی UI/UX، شروع مدل 3D</li>
+                    <li><strong>ماه 2:</strong> اتمام مدل 3D، توسعه اپ (ماژول GPS)</li>
+                    <li><strong>ماه 3:</strong> توسعه اپ (ماژول Beacon)</li>
+                    <li><strong>ماه 4:</strong> ادغام GPS و Beacon، Fusion Algorithm</li>
+                    <li><strong>ماه 5:</strong> نمایش نقشه 3D، نصب و کالیبراسیون</li>
+                    <li><strong>ماه 6:</strong> تست میدانی گسترده، Debug و بهینه‌سازی</li>
+                    <li><strong>ماه 7:</strong> تست نهایی و راه‌اندازی رسمی</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // محاسبه یک ردیف سخت‌افزار (تعداد × قیمت)
+        function calculateRow(input) {
+            const row = input.closest('tr');
+            const qtyInput = row.querySelector('.qty-input');
+            const priceInput = row.querySelector('.price-input');
+            const resultCell = row.querySelector('.result');
+            
+            if (qtyInput && priceInput && resultCell) {
+                const qty = parseFloat(qtyInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const total = qty * price;
+                resultCell.textContent = total.toFixed(0);
+                
+                // محاسبه مجدد کل جدول
+                calculateTable(input);
+            }
+        }
+
+        // محاسبه جمع یک جدول
+        function calculateTable(input) {
+            const table = input.closest('table');
+            const tbody = table.querySelector('tbody');
+            const dataRows = tbody.querySelectorAll('.data-row');
+            const totalRow = tbody.querySelector('.total-row');
+            const sectionTotalCell = totalRow.querySelector('.section-total');
+            
+            let sectionTotal = 0;
+            
+            dataRows.forEach(row => {
+                // برای جدول سخت‌افزار که نتیجه دارد
+                const resultCell = row.querySelector('.result');
+                if (resultCell) {
+                    const value = parseFloat(resultCell.textContent) || 0;
+                    sectionTotal += value;
+                } else {
+                    // برای جداول نصب و توسعه که فقط هزینه دارند
+                    const costInput = row.querySelector('.cost-input');
+                    if (costInput) {
+                        const value = parseFloat(costInput.value) || 0;
+                        sectionTotal += value;
+                    }
+                }
+            });
+            
+            if (sectionTotalCell) {
+                sectionTotalCell.textContent = sectionTotal.toFixed(0);
+            }
+            
+            // محاسبه جمع کل سناریو
+            calculateGrandTotal(input);
+        }
+
+        // محاسبه جمع کل یک سناریو
+        function calculateGrandTotal(input) {
+            const tabContent = input.closest('.tab-content');
+            const tables = tabContent.querySelectorAll('table');
+            let grandTotal = 0;
+            
+            tables.forEach(table => {
+                const sectionTotalCell = table.querySelector('.section-total');
+                if (sectionTotalCell) {
+                    const value = parseFloat(sectionTotalCell.textContent) || 0;
+                    grandTotal += value;
+                }
+            });
+            
+            const grandTotalSpan = tabContent.querySelector('.grand-total-value');
+            if (grandTotalSpan) {
+                grandTotalSpan.textContent = grandTotal.toFixed(0);
+            }
+            
+            // به‌روزرسانی جدول مقایسه
+            updateComparison();
+        }
+
+        // به‌روزرسانی جدول مقایسه
+        function updateComparison() {
+            const scenarios = ['scenarioA', 'scenarioB', 'scenarioC'];
+            const compIds = ['compA', 'compB', 'compC'];
+            
+            scenarios.forEach((scenarioId, index) => {
+                const scenario = document.getElementById(scenarioId);
+                const grandTotalSpan = scenario.querySelector('.grand-total-value');
+                const compSpan = document.getElementById(compIds[index]);
+                
+                if (grandTotalSpan && compSpan) {
+                    compSpan.textContent = grandTotalSpan.textContent;
+                }
+            });
+        }
+
+        // تابع تغییر تب
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+
+            const tabs = document.getElementsByClassName("tab");
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // حذف ردیف
+        function deleteRow(btn) {
+            if (confirm('آیا مطمئن هستید که می‌خواهید این ردیف را حذف کنید؟')) {
+                const row = btn.closest('tr');
+                const table = row.closest('table');
+                row.remove();
+                
+                // یک input از جدول پیدا کنیم برای محاسبه مجدد
+                const firstInput = table.querySelector('input[type="number"]');
+                if (firstInput) {
+                    calculateTable(firstInput);
+                }
+            }
+        }
+
+        // اضافه کردن ردیف جدید
+        function addRow(btn, type) {
+            const table = btn.previousElementSibling;
+            const tbody = table.querySelector('tbody');
+            const totalRow = tbody.querySelector('.total-row');
+            
+            const newRow = document.createElement('tr');
+            newRow.className = 'data-row';
+            
+            if (type === 'hardware') {
+                newRow.innerHTML = `
+                    <td><input type="text" class="editable-name" value="قلم جدید"></td>
+                    <td><input type="number" class="qty-input" value="1" oninput="calculateRow(this)"></td>
+                    <td><input type="number" class="price-input" value="0" oninput="calculateRow(this)"></td>
+                    <td class="result">0</td>
+                    <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                `;
+            } else {
+                newRow.innerHTML = `
+                    <td><input type="text" class="editable-name" value="قلم جدید"></td>
+                    <td><input type="text" value="1 هفته"></td>
+                    <td><input type="number" class="cost-input" value="0" oninput="calculateTable(this)"></td>
+                    <td><button class="delete-row" onclick="deleteRow(this)">×</button></td>
+                `;
+            }
+            
+            tbody.insertBefore(newRow, totalRow);
+            
+            // محاسبه مجدد
+            const firstInput = newRow.querySelector('input[type="number"]');
+            if (firstInput) {
+                calculateTable(firstInput);
+            }
+        }
+
+        // تغییر تم
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            showNotification('🎨 تم تغییر کرد!');
+        }
+
+        // ذخیره داده‌ها
+        function saveData() {
+            try {
+                const data = {
+                    timestamp: new Date().toISOString(),
+                    scenarios: []
+                };
+
+                const tabContents = document.querySelectorAll('.tab-content');
+                
+                tabContents.forEach((tabContent, index) => {
+                    const scenarioData = {
+                        id: tabContent.id,
+                        tables: []
+                    };
+
+                    const tables = tabContent.querySelectorAll('table');
+                    tables.forEach(table => {
+                        const tableData = {
+                            rows: []
+                        };
+
+                        const dataRows = table.querySelectorAll('.data-row');
+                        dataRows.forEach(row => {
+                            const rowData = [];
+                            const inputs = row.querySelectorAll('input');
+                            
+                            inputs.forEach(input => {
+                                rowData.push({
+                                    type: input.type,
+                                    className: input.className,
+                                    value: input.value
+                                });
+                            });
+
+                            tableData.rows.push(rowData);
+                        });
+
+                        scenarioData.tables.push(tableData);
+                    });
+
+                    data.scenarios.push(scenarioData);
+                });
+
+                localStorage.setItem('projectBudgetData', JSON.stringify(data));
+                showNotification('✅ داده‌ها با موفقیت ذخیره شد!');
+                console.log('Data saved:', data);
+            } catch (error) {
+                showNotification('❌ خطا در ذخیره داده‌ها!', true);
+                console.error('Save error:', error);
+            }
+        }
+
+        // بارگذاری داده‌ها
+        function loadData() {
+            try {
+                const savedData = localStorage.getItem('projectBudgetData');
+                if (!savedData) {
+                    showNotification('⚠️ هیچ داده ذخیره‌شده‌ای یافت نشد!', true);
+                    return;
+                }
+
+                const data = JSON.parse(savedData);
+                console.log('Loading data:', data);
+
+                data.scenarios.forEach((scenarioData, scenarioIndex) => {
+                    const tabContent = document.getElementById(scenarioData.id);
+                    if (!tabContent) return;
+
+                    const tables = tabContent.querySelectorAll('table');
+                    
+                    scenarioData.tables.forEach((tableData, tableIndex) => {
+                        if (tableIndex >= tables.length) return;
+                        
+                        const table = tables[tableIndex];
+                        const tbody = table.querySelector('tbody');
+                        const totalRow = tbody.querySelector('.total-row');
+                        
+                        // حذف ردیف‌های قبلی
+                        const oldDataRows = tbody.querySelectorAll('.data-row');
+                        oldDataRows.forEach(row => row.remove());
+                        
+                        // اضافه کردن ردیف‌های جدید
+                        tableData.rows.forEach(rowData => {
+                            const newRow = document.createElement('tr');
+                            newRow.className = 'data-row';
+                            
+                            let rowHTML = '';
+                            rowData.forEach((inputData, inputIndex) => {
+                                if (inputIndex === rowData.length - 1 && inputData.type === 'number') {
+                                    // ستون نتیجه برای جدول سخت‌افزار
+                                    rowHTML += `<td class="result">0</td>`;
+                                } else {
+                                    rowHTML += `<td><input type="${inputData.type}" class="${inputData.className}" value="${inputData.value}" 
+                                        ${inputData.className.includes('qty-input') || inputData.className.includes('price-input') ? 'oninput="calculateRow(this)"' : ''}
+                                        ${inputData.className.includes('cost-input') ? 'oninput="calculateTable(this)"' : ''}
+                                    ></td>`;
+                                }
+                            });
+                            
+                            rowHTML += '<td><button class="delete-row" onclick="deleteRow(this)">×</button></td>';
+                            newRow.innerHTML = rowHTML;
+                            
+                            tbody.insertBefore(newRow, totalRow);
+                        });
+                    });
+                });
+
+                // محاسبه مجدد همه چیز
+                document.querySelectorAll('.tab-content').forEach(tabContent => {
+                    const firstInput = tabContent.querySelector('input[type="number"]');
+                    if (firstInput) {
+                        calculateTable(firstInput);
+                    }
+                });
+
+                showNotification('✅ داده‌ها با موفقیت بارگذاری شد!');
+            } catch (error) {
+                showNotification('❌ خطا در بارگذاری داده‌ها!', true);
+                console.error('Load error:', error);
+            }
+        }
+
+        // نمایش نوتیفیکیشن
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.toggle('error', isError);
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // بارگذاری تم و محاسبه اولیه
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // محاسبه اولیه برای همه تب‌ها
+            document.querySelectorAll('.tab-content').forEach(tabContent => {
+                const firstInput = tabContent.querySelector('input[type="number"]');
+                if (firstInput) {
+                    calculateTable(firstInput);
+                }
+            });
+        });
+
+        // Auto-save هر 30 ثانیه
+        setInterval(() => {
+            saveData();
+        }, 30000);
+    </script>
+</body>
+</html>
