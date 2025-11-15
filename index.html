@@ -967,6 +967,91 @@
     </div>
 
     <script>
+        // داده‌های اولیه هر سناریو
+        const scenariosData = {
+            scenarioA: {
+                hardware: [
+                    {name: '25 عدد Minew MS50SFA', detail: '@$38', price: 950},
+                    {name: 'باتری یدک + بست + قفل', detail: 'مجموع', price: 425}
+                ],
+                installation: [
+                    {name: 'نصب و کالیبراسیون', detail: '7 روز', price: 690},
+                    {name: 'تابلوها + QR کد', detail: '10 عدد', price: 150}
+                ],
+                development: [
+                    {name: 'UI/UX + مدل 3D محیط', detail: '8 هفته', price: 3200},
+                    {name: 'توسعه اپ Flutter', detail: '12 هفته', price: 6000},
+                    {name: 'ادغام Beacon + مسیریابی', detail: '4 هفته', price: 2000},
+                    {name: 'Backend & API', detail: '4 هفته', price: 2000},
+                    {name: 'تست و دیباگ', detail: '2 هفته', price: 1000},
+                    {name: 'طراحی 2D + کانسپت', detail: '4 هفته', price: 1600},
+                    {name: '5 بازی AR ساده', detail: '6 هفته', price: 2400},
+                    {name: 'کارکتر + انیمیشن', detail: '4 هفته', price: 1600},
+                    {name: 'AI Tour Guide (پایه)', detail: '4 هفته', price: 1600}
+                ],
+                maintenance: [
+                    {name: 'تعویض باتری + بازرسی', price: 300},
+                    {name: 'بروزرسانی اپ', price: 1200},
+                    {name: 'پشتیبانی + سرور', price: 1700}
+                ]
+            },
+            scenarioB: {
+                hardware: [
+                    {name: '20 عدد Minew MS50SFA', detail: '@$38', price: 760},
+                    {name: 'باتری یدک + بست + قفل', detail: 'مجموع', price: 340}
+                ],
+                installation: [
+                    {name: 'نصب و کالیبراسیون GPS+Beacon', detail: '10.5 روز', price: 615},
+                    {name: 'تابلوها + QR کد', detail: '10 عدد', price: 150}
+                ],
+                development: [
+                    {name: 'UI/UX + مدل 3D پیشرفته', detail: '8 هفته', price: 4000},
+                    {name: 'توسعه اپ Flutter', detail: '14 هفته', price: 7000},
+                    {name: 'ادغام GPS+Beacon + Fusion', detail: '5 هفته', price: 2500},
+                    {name: 'مسیریابی پیشرفته + نقشه 3D', detail: '4 هفته', price: 2000},
+                    {name: 'Backend & API پیشرفته', detail: '6 هفته', price: 3000},
+                    {name: 'تست جامع و دیباگ', detail: '3 هفته', price: 1500},
+                    {name: 'طراحی 2D + کانسپت حرفه‌ای', detail: '6 هفته', price: 2400},
+                    {name: '5 بازی AR با کیفیت بالا', detail: '8 هفته', price: 3200},
+                    {name: 'کارکتر + ریگ + انیمیشن', detail: '6 هفته', price: 2400},
+                    {name: 'AI Tour Guide پیشرفته', detail: '6 هفته', price: 2400}
+                ],
+                maintenance: [
+                    {name: 'تعویض باتری + بازرسی', price: 260},
+                    {name: 'بروزرسانی اپ', price: 1200},
+                    {name: 'پشتیبانی + سرور', price: 1700}
+                ]
+            },
+            scenarioC: {
+                hardware: [
+                    {name: '12 عدد Kontakt.io Beacon Pro', detail: '@$75', price: 900},
+                    {name: 'بست حرفه‌ای + قفل', detail: 'مجموع', price: 204}
+                ],
+                installation: [
+                    {name: 'نصب و کالیبراسیون دقیق', detail: '3.5 روز', price: 480},
+                    {name: 'تابلوها + QR کد', detail: '10 عدد', price: 150}
+                ],
+                development: [
+                    {name: 'UI/UX + مدل 3D حرفه‌ای', detail: '8 هفته', price: 4800},
+                    {name: 'توسعه اپ Flutter Premium', detail: '14 هفته', price: 8400},
+                    {name: 'ادغام GPS+Beacon حرفه‌ای', detail: '5 هفته', price: 3000},
+                    {name: 'Fusion Algorithm پیشرفته', detail: '2 هفته', price: 1200},
+                    {name: 'مسیریابی + نقشه 3D حرفه‌ای', detail: '5 هفته', price: 3000},
+                    {name: 'Backend & API Enterprise', detail: '6 هفته', price: 3600},
+                    {name: 'تست کامل + بهینه‌سازی', detail: '4 هفته', price: 2400},
+                    {name: 'طراحی 2D + کانسپت Premium', detail: '6 هفته', price: 3000},
+                    {name: '5 بازی AR با گرافیک بالا', detail: '10 هفته', price: 5000},
+                    {name: 'کارکتر + ریگ + انیمیشن حرفه‌ای', detail: '8 هفته', price: 4000},
+                    {name: 'AI Tour Guide با ML', detail: '8 هفته', price: 4000}
+                ],
+                maintenance: [
+                    {name: 'بازرسی (Beacon بدون باتری)', price: 150},
+                    {name: 'بروزرسانی اپ', price: 1200},
+                    {name: 'پشتیبانی + سرور + مانیتورینگ', price: 1820}
+                ]
+            }
+        };
+
         function openTab(evt, tabName) {
             const tabContents = document.getElementsByClassName("tab-content");
             for (let i = 0; i < tabContents.length; i++) {
@@ -989,9 +1074,178 @@
             html.setAttribute('data-theme', newTheme);
         }
 
+        function deleteRow(scenario, section, index) {
+            if (confirm('آیا از حذف این مورد اطمینان دارید؟')) {
+                scenariosData[scenario][section].splice(index, 1);
+                renderScenario(scenario);
+            }
+        }
+
+        function editRow(scenario, section, index) {
+            const item = scenariosData[scenario][section][index];
+            const newPrice = prompt('قیمت جدید را وارد کنید:', item.price);
+            
+            if (newPrice !== null && !isNaN(newPrice) && newPrice >= 0) {
+                item.price = parseFloat(newPrice);
+                renderScenario(scenario);
+            }
+        }
+
+        function calculateTotal(scenario) {
+            let total = 0;
+            for (let section in scenariosData[scenario]) {
+                scenariosData[scenario][section].forEach(item => {
+                    total += item.price;
+                });
+            }
+            return total;
+        }
+
+        function renderScenario(scenario) {
+            const data = scenariosData[scenario];
+            const container = document.getElementById(scenario);
+            
+            let hardwareTotal = data.hardware.reduce((sum, item) => sum + item.price, 0);
+            let installTotal = data.installation.reduce((sum, item) => sum + item.price, 0);
+            let devTotal = data.development.reduce((sum, item) => sum + item.price, 0);
+            let maintTotal = data.maintenance.reduce((sum, item) => sum + item.price, 0);
+            let grandTotal = hardwareTotal + installTotal + devTotal;
+
+            let html = `
+                <div class="scenario">
+                    <h2>${container.querySelector('h2').textContent}</h2>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>بخش</th>
+                                <th style="width: 25%">جزئیات</th>
+                                <th style="width: 20%">هزینه ($)</th>
+                                <th style="width: 100px">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="section-title">
+                                <td colspan="4">سخت‌افزار</td>
+                            </tr>
+            `;
+
+            data.hardware.forEach((item, i) => {
+                html += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.detail || ''}</td>
+                        <td>$${item.price.toLocaleString()}</td>
+                        <td>
+                            <button onclick="editRow('${scenario}', 'hardware', ${i})" style="padding: 5px 10px; margin: 2px; cursor: pointer; border: none; background: #4facfe; color: white; border-radius: 5px;">✏️</button>
+                            <button onclick="deleteRow('${scenario}', 'hardware', ${i})" style="padding: 5px 10px; margin: 2px; cursor: pointer; border: none; background: #f5576c; color: white; border-radius: 5px;">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    <tr class="total-row">
+                        <td colspan="3"><strong>جمع سخت‌افزار</strong></td>
+                        <td><strong>$${hardwareTotal.toLocaleString()}</strong></td>
+                    </tr>
+                    
+                    <tr class="section-title">
+                        <td colspan="4">نصب و راه‌اندازی</td>
+                    </tr>
+            `;
+
+            data.installation.forEach((item, i) => {
+                html += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.detail || ''}</td>
+                        <td>$${item.price.toLocaleString()}</td>
+                        <td>
+                            <button onclick="editRow('${scenario}', 'installation', ${i})" style="padding: 5px 10px; margin: 2px; cursor: pointer; border: none; background: #4facfe; color: white; border-radius: 5px;">✏️</button>
+                            <button onclick="deleteRow('${scenario}', 'installation', ${i})" style="padding: 5px 10px; margin: 2px; cursor: pointer; border: none; background: #f5576c; color: white; border-radius: 5px;">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    <tr class="total-row">
+                        <td colspan="3"><strong>جمع نصب</strong></td>
+                        <td><strong>$${installTotal.toLocaleString()}</strong></td>
+                    </tr>
+                    
+                    <tr class="section-title">
+                        <td colspan="4">توسعه نرم‌افزار</td>
+                    </tr>
+            `;
+
+            data.development.forEach((item, i) => {
+                html += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.detail || ''}</td>
+                        <td>$${item.price.toLocaleString()}</td>
+                        <td>
+                            <button onclick="editRow('${scenario}', 'development', ${i})" style="padding: 5px 10px; margin: 2px; cursor: pointer; border: none; background: #4facfe; color: white; border-radius: 5px;">✏️</button>
+                            <button onclick="deleteRow('${scenario}', 'development', ${i})" style="padding: 5px 10px; margin: 2px; cursor: pointer; border: none; background: #f5576c; color: white; border-radius: 5px;">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    <tr class="total-row">
+                        <td colspan="3"><strong>جمع توسعه</strong></td>
+                        <td><strong>$${devTotal.toLocaleString()}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="grand-total">
+                💰 جمع کل ${scenario === 'scenarioA' ? 'سناریو A' : scenario === 'scenarioB' ? 'سناریو B' : 'سناریو C'}: <strong>$${grandTotal.toLocaleString()}</strong>
+            </div>
+
+            <table style="margin-top: 20px;">
+                <thead>
+                    <tr>
+                        <th colspan="2">نگهداری سالانه</th>
+                        <th style="width: 100px">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            data.maintenance.forEach((item, i) => {
+                html += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>$${item.price.toLocaleString()}</td>
+                        <td>
+                            <button onclick="editRow('${scenario}', 'maintenance', ${i})" style="padding: 5px 10px; margin: 2px; cursor: pointer; border: none; background: #4facfe; color: white; border-radius: 5px;">✏️</button>
+                            <button onclick="deleteRow('${scenario}', 'maintenance', ${i})" style="padding: 5px 10px; margin: 2px; cursor: pointer; border: none; background: #f5576c; color: white; border-radius: 5px;">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    <tr class="total-row">
+                        <td>جمع نگهداری سالانه</td>
+                        <td colspan="2">$${maintTotal.toLocaleString()}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
+            renderScenario('scenarioA');
+            renderScenario('scenarioB');
+            renderScenario('scenarioC');
         });
     </script>
 </body>
